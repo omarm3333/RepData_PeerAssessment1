@@ -18,7 +18,7 @@ str(activity)
   
 ## What is mean total number of steps taken per day?
 
-Calculate Daily activity grouped by date and summirized with total, mean and median, remove NAs values:
+Calculate daily activity grouped by date and summirized with total, mean and median, remove NAs values:
 ```{r}
 library(dplyr)
 daily <- activity               %>%
@@ -31,7 +31,7 @@ daily <- activity               %>%
         filter(complete.cases(.))
 ```
 
-Ploting histogram of total daily steps per 5-min interval :
+Ploting histogram of total daily steps per 5-min interval:
 ```{r}
 hist(daily$total,
      main = "Total Daily Steps per Interval",
