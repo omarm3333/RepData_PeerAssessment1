@@ -15,6 +15,7 @@ activity$date <- as.Date(activity$date, "%Y-%m-%d")
 # What is mean total number of steps taken per day?
 ########################################################
 # Get Daily activity grouped and summirized, removing NAs
+
 daily <- activity %>%
         group_by(date) %>%
         summarize(
@@ -25,21 +26,29 @@ daily <- activity %>%
         filter(complete.cases(.))
 
 # Plot total daily step histogram
+par(mfrow = c(1, 1))
 hist(daily$total,
-     main = "Total Daily Steps per Interval",
-     xlab = "Daily 5-min interval",
-     ylab = "Total steps frequency"
+     main = "Total Daily Steps",
+     xlab = "Total Steps",
+     ylab = "Frequency"
      )
 
 # Report Total, mean and median steps per day
-par(mfrow = c(3, 1), mar = c(0, 4, 2, 1), cex.main=2)
+# Mean and median daily steps
+mean(daily$total)
+median(daily$total)
 
+# Detail
+par(mfrow = c(3, 1), cex.main=2)
+
+par(mar = c(0, 4, 2, 1))
 with(daily, plot (date, total, type="l",
                   main = "Total, Mean and Median Daily Steps",
                   ylab = "Total steps",
                   xaxt="n"
                   )
      )
+
 par(mar = c(0, 4, 0, 1))
 with(daily, plot (date, mean, type="l",
                   ylab = "Average steps",
@@ -133,6 +142,10 @@ dailyI <- impute %>%
                 mean=mean(steps),
                 median=median(steps)
         )
+
+# Mean and median daily steps of new dataset
+mean(dailyI$total)
+median(dailyI$total)
 
 # Plot histogram of daily steps with old and new dataset
 par(mfrow = c(1,2))

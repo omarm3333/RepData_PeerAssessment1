@@ -19,7 +19,7 @@ str(activity)
   
 ## What is mean total number of steps taken per day?
 
-Calculate Daily activity grouped by date and summirized with total, mean and median, remove NAs values:
+Calculate daily activity grouped by date and summirized with total, mean and median, ignore NAs values:
 
 ```r
 library(dplyr)
@@ -33,19 +33,39 @@ daily <- activity               %>%
         filter(complete.cases(.))
 ```
 
-Ploting histogram of total daily steps per 5-min interval :
+Ploting histogram of total daily steps:
 
 ```r
+par(mfrow = c(1, 1))
 hist(daily$total,
-     main = "Total Daily Steps per Interval",
-     xlab = "Daily 5-min interval",
-     ylab = "Total steps frequency"
+     main = "Total Daily Steps",
+     xlab = "Total Steps",
+     ylab = "Frequency"
      )
 ```
 
 <img src="figures/unnamed-chunk-3-1.png" title="" alt="" style="display: block; margin: auto;" />
 
-The mean and median total number of steps taken per day are shown in next plot:
+
+The daily mean and median of total steps are:
+
+```r
+mean(daily$total)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(daily$total)
+```
+
+```
+## [1] 10765
+```
+
+The detail of the mean and median total number of steps taken per day are shown in next plot:
 
 ```r
 # Set plot panels arrangement and main title size
@@ -58,6 +78,7 @@ with(daily, plot (date, total, type="l",
                   xaxt="n"
                   )
      )
+
 par(mar = c(0, 4, 0, 1))
 with(daily, plot (date, mean, type="l",
                   ylab = "Average steps",
@@ -66,6 +87,7 @@ with(daily, plot (date, mean, type="l",
      )
 
 par(mar = c(4, 4, 0, 1))
+
 with(daily, plot (date, median, type="l",
                   ylab = "Median steps",
                   xlab = "Date"
@@ -73,7 +95,7 @@ with(daily, plot (date, median, type="l",
      )
 ```
 
-<img src="figures/unnamed-chunk-4-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figures/unnamed-chunk-5-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ## What is the average daily activity pattern?
 Calculate the average number of steps taken daily, in 5-minute intervals:
@@ -106,7 +128,7 @@ with(average, plot (interval, avg, type="l",
 abline(v=maxInterval, lwd = 2, col="green")
 ```
 
-<img src="figures/unnamed-chunk-6-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figures/unnamed-chunk-7-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ## Imputing missing values
 The total number of missing values are:
@@ -288,10 +310,36 @@ hist(dailyI$total,
      )
 ```
 
-<img src="figures/unnamed-chunk-15-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figures/unnamed-chunk-16-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 
-Comparing the total, mean and median of original and new imputed dataset, we can perceive that there is not much impact in resulting estimates:
+The daily mean and median of total steps with the original and new dataset are:
+
+```r
+mean(daily$total)   ; mean(dailyI$total)
+```
+
+```
+## [1] 10766.19
+```
+
+```
+## [1] 10458.1
+```
+
+```r
+median(daily$total) ; median(dailyI$total)
+```
+
+```
+## [1] 10765
+```
+
+```
+## [1] 10600
+```
+
+Compare the total, mean and median of original and new imputed dataset details:
 
 ```r
 par(mfrow = c(3, 2))
@@ -341,7 +389,7 @@ with(dailyI, plot (date, median, type="l",
      )
 ```
 
-<img src="figures/unnamed-chunk-16-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figures/unnamed-chunk-18-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ## Are there differences in activity patterns between weekdays and weekends?
 Calulate the days patter per weekday or weekend, based on a factor variable. Then group by day and interval, and and summirize calculating mean steps:
@@ -382,6 +430,6 @@ with(daysPattern[daysPattern$day == "weekday",],
      )
 ```
 
-<img src="figures/unnamed-chunk-18-1.png" title="" alt="" style="display: block; margin: auto;" />
+<img src="figures/unnamed-chunk-20-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 

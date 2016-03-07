@@ -18,7 +18,7 @@ str(activity)
   
 ## What is mean total number of steps taken per day?
 
-Calculate daily activity grouped by date and summirized with total, mean and median, remove NAs values:
+Calculate daily activity grouped by date and summirized with total, mean and median, ignore NAs values:
 ```{r}
 library(dplyr)
 daily <- activity               %>%
@@ -31,16 +31,24 @@ daily <- activity               %>%
         filter(complete.cases(.))
 ```
 
-Ploting histogram of total daily steps per 5-min interval:
+Ploting histogram of total daily steps:
 ```{r}
+par(mfrow = c(1, 1))
 hist(daily$total,
-     main = "Total Daily Steps per Interval",
-     xlab = "Daily 5-min interval",
-     ylab = "Total steps frequency"
+     main = "Total Daily Steps",
+     xlab = "Total Steps",
+     ylab = "Frequency"
      )
 ```
 
-The mean and median total number of steps taken per day are shown in next plot:
+
+The daily mean and median of total steps are:
+```{r}
+mean(daily$total)
+median(daily$total)
+```
+
+The detail of the mean and median total number of steps taken per day are shown in next plot:
 ```{r fig.width=7, fig.height=6}
 # Set plot panels arrangement and main title size
 par(mfrow = c(3, 1), cex.main=2)
@@ -52,6 +60,7 @@ with(daily, plot (date, total, type="l",
                   xaxt="n"
                   )
      )
+
 par(mar = c(0, 4, 0, 1))
 with(daily, plot (date, mean, type="l",
                   ylab = "Average steps",
@@ -60,6 +69,7 @@ with(daily, plot (date, mean, type="l",
      )
 
 par(mar = c(4, 4, 0, 1))
+
 with(daily, plot (date, median, type="l",
                   ylab = "Median steps",
                   xlab = "Date"
@@ -197,7 +207,13 @@ hist(dailyI$total,
 ```
 
 
-Comparing the total, mean and median of original and new imputed dataset, we can perceive that there is not much impact in resulting estimates:
+The daily mean and median of total steps with the original and new dataset are:
+```{r}
+mean(daily$total)   ; mean(dailyI$total)
+median(daily$total) ; median(dailyI$total)
+```
+
+Compare the total, mean and median of original and new imputed dataset details:
 ```{r fig.width=7, fig.height=7}
 par(mfrow = c(3, 2))
 
