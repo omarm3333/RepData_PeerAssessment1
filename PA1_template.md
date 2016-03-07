@@ -1,25 +1,27 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.width=4, fig.height=4, fig.align='center', fig.path = 'figures/', message=FALSE)
-```
+# Reproducible Research: Peer Assessment 1
+
 
 ## Loading and preprocessing the data
 Load data and reformating character date (format "%Y-%m-%d") into Date object:
-```{r}
+
+```r
 activity      <- read.csv("activity.csv")
 activity$date <- as.Date(activity$date, "%Y-%m-%d")
 str(activity)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
   
 ## What is mean total number of steps taken per day?
 
 Calculate Daily activity grouped by date and summirized with total, mean and median, remove NAs values:
-```{r}
+
+```r
 library(dplyr)
 daily <- activity               %>%
         group_by(date)          %>%
@@ -32,7 +34,8 @@ daily <- activity               %>%
 ```
 
 Ploting histogram of total daily steps per 5-min interval :
-```{r}
+
+```r
 hist(daily$total,
      main = "Total Daily Steps per Interval",
      xlab = "Daily 5-min interval",
@@ -40,8 +43,11 @@ hist(daily$total,
      )
 ```
 
+<img src="figures/unnamed-chunk-3-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 The mean and median total number of steps taken per day are shown in next plot:
-```{r fig.width=7, fig.height=6}
+
+```r
 # Set plot panels arrangement and main title size
 par(mfrow = c(3, 1), cex.main=2)
 
@@ -67,9 +73,12 @@ with(daily, plot (date, median, type="l",
      )
 ```
 
+<img src="figures/unnamed-chunk-4-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 ## What is the average daily activity pattern?
 Calculate the average number of steps taken daily, in 5-minute intervals:
-```{r}
+
+```r
 average <- activity             %>%
         group_by(interval)      %>%
         summarize(avg=mean(steps, na.rm = TRUE))
@@ -79,8 +88,13 @@ maxInterval <- average[average$avg == max(average$avg),]$interval
 maxInterval
 ```
 
+```
+## [1] 835
+```
+
 Plot the Average Steps per 5-min interval; identifying the interval where number of steps is the maximum:
-```{r}
+
+```r
 par(mfrow = c(1,1), mar = c(4,4,4,1))
 
 with(average, plot (interval, avg, type="l",
@@ -92,18 +106,41 @@ with(average, plot (interval, avg, type="l",
 abline(v=maxInterval, lwd = 2, col="green")
 ```
 
+<img src="figures/unnamed-chunk-6-1.png" title="" alt="" style="display: block; margin: auto;" />
+
 ## Imputing missing values
 The total number of missing values are:
-```{r}
+
+```r
 missingValues <- sum(is.na(activity$steps))
 missingValues
 ```
+
+```
+## [1] 2304
+```
 As you can see next, there are 8 days with missing values of whole day (288 5-min intervals per day). For such, using average of same, previous or next hour of same missing day could not be possible as there are no values for the entire day.
-```{r}
+
+```r
 activity %>% 
         group_by(date)          %>% 
         filter(is.na(steps))    %>% 
         summarize(total_missing=n())
+```
+
+```
+## Source: local data frame [8 x 2]
+## 
+##         date total_missing
+##       (date)         (int)
+## 1 2012-10-01           288
+## 2 2012-10-08           288
+## 3 2012-11-01           288
+## 4 2012-11-04           288
+## 5 2012-11-09           288
+## 6 2012-11-10           288
+## 7 2012-11-14           288
+## 8 2012-11-30           288
 ```
 
 So that the strategy will be to impute average value of 5-min intervals of previous day, if available, or next day, if not available.
@@ -111,7 +148,8 @@ So that the strategy will be to impute average value of 5-min intervals of previ
 Obtaining the average steps per 5-min interval, NAs will be added where missing data is found.
 Append a character key equals to **date** concatenated to **interval**. This key will be used to join interval averages to original activity data.
 
-```{r}
+
+```r
 intervalAvg <- activity %>%
         group_by(date,interval) %>%
         summarize(intervalMean=mean(steps)) %>%
@@ -122,8 +160,28 @@ intervalAvg <- activity %>%
 intervalAvg
 ```
 
+```
+## Source: local data frame [17,568 x 4]
+## Groups: date [61]
+## 
+##          date interval intervalMean   keyInterval
+##        (date)    (int)        (dbl)         (chr)
+## 1  2012-10-01        0           NA  2012-10-01-0
+## 2  2012-10-01        5           NA  2012-10-01-5
+## 3  2012-10-01       10           NA 2012-10-01-10
+## 4  2012-10-01       15           NA 2012-10-01-15
+## 5  2012-10-01       20           NA 2012-10-01-20
+## 6  2012-10-01       25           NA 2012-10-01-25
+## 7  2012-10-01       30           NA 2012-10-01-30
+## 8  2012-10-01       35           NA 2012-10-01-35
+## 9  2012-10-01       40           NA 2012-10-01-40
+## 10 2012-10-01       45           NA 2012-10-01-45
+## ..        ...      ...          ...           ...
+```
+
 In order to obtains previous and next day averages, we will shift 288 intervals (one full day's data) down or up, filling with NAs the head or tail:  
-```{r}
+
+```r
 # Append previous day intervals' means column to interval averages
 intervalAvg$prevDayIntervalMean <- 
         c(rep(NA,288), intervalAvg[1:(nrow(intervalAvg)-288),]$intervalMean)
@@ -135,8 +193,29 @@ intervalAvg$nextDayIntervalMean <-
 intervalAvg
 ```
 
+```
+## Source: local data frame [17,568 x 6]
+## Groups: date [61]
+## 
+##          date interval intervalMean   keyInterval prevDayIntervalMean
+##        (date)    (int)        (dbl)         (chr)               (dbl)
+## 1  2012-10-01        0           NA  2012-10-01-0                  NA
+## 2  2012-10-01        5           NA  2012-10-01-5                  NA
+## 3  2012-10-01       10           NA 2012-10-01-10                  NA
+## 4  2012-10-01       15           NA 2012-10-01-15                  NA
+## 5  2012-10-01       20           NA 2012-10-01-20                  NA
+## 6  2012-10-01       25           NA 2012-10-01-25                  NA
+## 7  2012-10-01       30           NA 2012-10-01-30                  NA
+## 8  2012-10-01       35           NA 2012-10-01-35                  NA
+## 9  2012-10-01       40           NA 2012-10-01-40                  NA
+## 10 2012-10-01       45           NA 2012-10-01-45                  NA
+## ..        ...      ...          ...           ...                 ...
+## Variables not shown: nextDayIntervalMean (dbl)
+```
+
 Now, with original activity data, create joint key (**date** + **interval**) and then left join it with interval averages (**intervalAvg**):
-```{r}
+
+```r
 # Create values to impute plus join key (date+interval)
 impute <- activity      %>%
         mutate(keyInterval=paste(as.character(date), as.character(interval),sep="-")
@@ -147,7 +226,8 @@ impute <- activity      %>%
 ```
 
 Impute values on NAs steps first by previous day interval average and remaining NAs, by next day interval averages:
-```{r}
+
+```r
 # Impute NA steps first with previous day interval means
 impute[is.na(impute$steps),]$steps <- 
         impute[is.na(impute$steps),]$prevDayIntervalMean
@@ -158,14 +238,26 @@ impute[is.na(impute$steps),]$steps <-
 ```
 
 Clean up new data dataset selecting only **date**, **interval** and **steps** colums:
-```{r}
+
+```r
 impute <- select(impute, date=date.x, interval=interval.x, steps)
 
 head(impute)
 ```
 
+```
+##         date interval steps
+## 1 2012-10-01        0     0
+## 2 2012-10-01        5     0
+## 3 2012-10-01       10     0
+## 4 2012-10-01       15     0
+## 5 2012-10-01       20     0
+## 6 2012-10-01       25     0
+```
+
 Calculate the new daily average steps per interval of new imputed data set:
-```{r}
+
+```r
 dailyI <- impute                %>%
         group_by(date)          %>%
         summarize(
@@ -176,7 +268,8 @@ dailyI <- impute                %>%
 ```
 
 Compare original and new data set's histograms:
-```{r fig.width=10, fig.height=6}
+
+```r
 par(mfrow = c(1,2))
 
 par(mar = c(4,4,4,1))
@@ -193,12 +286,14 @@ hist(dailyI$total,
      ylab = NULL,
      yaxt = "n"
      )
-
 ```
+
+<img src="figures/unnamed-chunk-15-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 
 Comparing the total, mean and median of original and new imputed dataset, we can perceive that there is not much impact in resulting estimates:
-```{r fig.width=7, fig.height=7}
+
+```r
 par(mfrow = c(3, 2))
 
 par(mar = c(0,4,2,1))
@@ -244,12 +339,14 @@ with(dailyI, plot (date, median, type="l",
                    xlab = "Date"
                    )
      )
-
 ```
+
+<img src="figures/unnamed-chunk-16-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 ## Are there differences in activity patterns between weekdays and weekends?
 Calulate the days patter per weekday or weekend, based on a factor variable. Then group by day and interval, and and summirize calculating mean steps:
-```{r}
+
+```r
 daysPattern <- impute                   %>%
         mutate(day=as.factor(ifelse(weekdays(date) == "Saturday" | weekdays(date) == "Sunday",
                               "weekend",
@@ -260,7 +357,8 @@ daysPattern <- impute                   %>%
 ```
 
 Compare both plots days averages:
-```{r fig.width=7, fig.height=7}
+
+```r
 par(mfrow = c(2, 1))
 
 par(mar = c(0, 4, 2, 1))
@@ -283,5 +381,7 @@ with(daysPattern[daysPattern$day == "weekday",],
           )
      )
 ```
+
+<img src="figures/unnamed-chunk-18-1.png" title="" alt="" style="display: block; margin: auto;" />
 
 
